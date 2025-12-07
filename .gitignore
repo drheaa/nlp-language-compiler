@@ -1,0 +1,88 @@
+# -------------------------
+# Python / Virtual Environment
+# -------------------------
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.pickle
+
+# -------------------------
+# IDE / Editor Settings
+# -------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# -------------------------
+# OS-specific Files
+# -------------------------
+.DS_Store
+Thumbs.db
+
+# -------------------------
+# Model & HF Cache (Very Important)
+# prevents pushing 2–10GB model files
+# -------------------------
+.cache/
+.cache/*
+
+# HuggingFace Transformers cache
+~/.cache/huggingface/
+huggingface/
+huggingface/*
+
+# Transformers downloaded model weights
+**/models/
+models/
+models/*
+*.safetensors
+*.bin
+
+# -------------------------
+# Streamlit Cache
+# -------------------------
+.streamlit/
+.streamlit/*
+
+# -------------------------
+# Logs / Temp Files
+# -------------------------
+*.log
+*.out
+*.err
+logs/
+temp/
+tmp/
+
+# -------------------------
+# Python Package Artifacts
+# -------------------------
+dist/
+build/
+*.egg-info/
+*.egg
+MANIFEST
+
+# -------------------------
+# Notebook Checkpoints
+# -------------------------
+.ipynb_checkpoints/
+
+# -------------------------
+# Project-specific
+# -------------------------
+# prevent accidental commit of datasets or user-generated examples
+data/
+data/*
+
+# prevent environment variables from leaking
+.env
+.env.*
+!.env.example
+
