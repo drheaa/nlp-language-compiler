@@ -1,3 +1,7 @@
+# ============================================================
+# Safe, fully escaped templates for Python .format()
+# ============================================================
+
 REASONING_TEMPLATE = """
 You extract structured logic from a natural-language instruction.
 Return a JSON object following the schema exactly.
@@ -20,12 +24,15 @@ Instruction:
 {instruction}
 
 Return JSON in this exact pattern:
-{"steps":[
-  {"id":"S1","role":"condition","text":"...", "depends_on":[], 
-   "operator": null, "value": null, "negated": false,
-   "clarification_needed": false, "clarification_field": null}
-]}
+{{"steps":[
+  {{"id":"S1","role":"condition","text":"...", "depends_on":[],
+    "operator": null, "value": null, "negated": false,
+    "clarification_needed": false, "clarification_field": null}}
+]}}
 """
+
+
+# ============================================================
 
 PSEUDOCODE_TEMPLATE = """
 Convert this JSON logic plan into clean pseudocode.
@@ -42,6 +49,9 @@ Rules:
 Logic plan JSON:
 {logic_json}
 """
+
+
+# ============================================================
 
 PYTHON_CODE_TEMPLATE = """
 Convert the pseudocode to executable Python 3 code.
