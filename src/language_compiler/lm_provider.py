@@ -1,63 +1,70 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
-
-# Maps friendly model names → HuggingFace weights
+# Maps friendly names → lightweight local models
 MODEL_MAP = {
-    "deepseek": "deepseek-ai/deepseek-coder-1.3b-instruct",
-    "qwen": "Qwen/Qwen2.5-1.5B-Instruct"
+    "qwen-mini": "Qwen/Qwen2.5-0.5B-Instruct",
+    "phi-mini": "microsoft/Phi-3.5-mini-instruct"
 }
 
 
 class LMProvider:
     """
-    Unified LM interface for local, open-source LLMs.
-    Supports:
-        - Phi-3 Micro (default)
-        - DeepSeek Coder 1.3B
-        - Qwen2.5-1.5B
+    Lightweight LM interface for local, CPU-friendly open-source models.
+    No API, no HF authentication needed.
     """
 
-    def __init__(self, model="deepseek"):
+    def __init__(self, model: str = "qwen-mini"):
+        # Map friendly names to full HuggingFace model paths
         if model in MODEL_MAP:
             self.model_name = MODEL_MAP[model]
         else:
-            self.model_name = model
+            self.model_name = model  # allow full HF path
 
-        print(f"[LMProvider] Loading model: {self.model_name}")
+        print(f"[LMProvider] Loading local model: {self.model_name}")
 
-        dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+        # Always use CPU for universal compatibility
+        device = "cpu"
+        torch_dtype = torch.float32  # safe for CPU
 
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-
-        self.model = AutoModelForCausalLM.from_pretrained(
+        # Load tokenizer
+        self.tokenizer = AutoTokenizer.from_pretrained(
             self.model_name,
-            torch_dtype=torch.float32,
-            device_map="cpu"
+            trust_remote_code=True
         )
 
-        # Create generation pipeline
+        # Load model locally, CPU only
+        self.model = AutoModelForCausalLM.from_pretrained(
+            self.model_name,
+            trust_remote_code=True,
+            torch_dtype=torch_dtype,
+            device_map={"": device}
+        )
+
+        # Generation pipeline
         self.pipe = pipeline(
             "text-generation",
             model=self.model,
             tokenizer=self.tokenizer,
-            do_sample=False,
-            temperature=0.2,
-            max_new_tokens=64
+            do_sample=False,          # deterministic output
+            temperature=0.1,           # controlled randomness
+            max_new_tokens=256        # safe default
         )
 
     def complete(self, prompt: str, **kwargs) -> str:
         """
-        Generate text for any of the supported models.
+        Generate text using a lightweight local model.
         """
+        max_tokens = kwargs.get("max_tokens", 256)
+
         output = self.pipe(
             prompt,
-            max_new_tokens=kwargs.get("max_tokens", 512),
-            temperature=kwargs.get("temperature", 0.2),
-            do_sample=False
+            max_new_tokens=max_tokens,
+            do_sample=False,
+            temperature=0.1
         )[0]["generated_text"]
-        
-        # Remove the prompt from the output
+
+        # Remove the prompt prefix if model echoes it
         if output.startswith(prompt):
             output = output[len(prompt):]
 
