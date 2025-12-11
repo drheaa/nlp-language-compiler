@@ -2,30 +2,26 @@ import json
 import re
 
 
-# ------------------------------------------------------
-# Safely parse JSON from LLM output
-# ------------------------------------------------------
+# REVISED safe_json_loads
 def safe_json_loads(s: str):
     """
     Attempts to extract a valid JSON object from an LLM response.
-    Specifically targets and removes common small-model artifacts like preambles.
+    Aggressively strips leading noise and non-JSON artifacts.
     """
 
     # 1. Aggressive cleaning of common noise and markdown
     s = s.strip()
     s = s.replace("```json", "").replace("```JSON", "").replace("```", "")
     
-    # NEW: Explicitly remove the model's verbose preamble text
-    if "Explanation of the seed:" in s:
-        # Find the start of the explanation and discard it and everything before it
-        s = s.split("Explanation of the seed:", 1)[-1].strip()
-    
-    # 2. Aggressive Bounding (Search for the content between the first '{' and the last '}')
-    match = re.search(r"(\{.*\})", s, re.DOTALL)
-    
-    candidate = s
-    if match:
-        candidate = match.group(1)
+    # 2. Aggressively strip everything BEFORE the first opening brace.
+    # This is the CRITICAL change to remove the "Explanation..." text.
+    start = s.find('{')
+    if start == -1:
+        # If no opening brace is found, the model failed completely.
+        raise ValueError(f"Failed to find starting JSON brace in model output:\n{s}")
+
+    # Candidate starts at the first '{' and ends at the last '}'
+    candidate = s[start:s.rfind('}') + 1]
     
     # 3. First attempt: Parse the bounded candidate
     try:
@@ -33,18 +29,18 @@ def safe_json_loads(s: str):
     except json.JSONDecodeError:
         pass  # Fall through to the final fallback
 
-    # 4. Final fallback: sanitize and try again
-    cleaned = re.sub(r"[\x00-\x1F]+", "", s)
+    # 4. Final fallback: sanitize and retry the bounded candidate
+    # This handles issues like stray non-printable characters.
+    cleaned = re.sub(r"[\x00-\x1F\u2022\u2023]+", "", candidate)
     
     try:
         # Retry with the aggressive bounding on the cleaned string
-        match_cleaned = re.search(r"(\{.*\})", cleaned, re.DOTALL)
-        if match_cleaned:
-            return json.loads(match_cleaned.group(1))
+        return json.loads(cleaned)
             
     except Exception as e:
         # 5. Final failure
-        raise ValueError(f"Failed to parse JSON from model output:\n{s}") from e
+        # Show the original output for debugging the prompt, but fail on the clean candidate.
+        raise ValueError(f"Failed to parse JSON from model output (Check LLM output):\n{s}") from e
 
 
 # ------------------------------------------------------
