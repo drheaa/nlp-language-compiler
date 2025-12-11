@@ -37,12 +37,15 @@ class LMProvider:
             torch_dtype = torch.float32
             print("[LMProvider] No GPU detected → using CPU.")
 
+        # /content/nlp-language-compiler/src/language_compiler/lm_provider.py
+
+# ...
         # ----------------------------------------------------
         # Load tokenizer
         # ----------------------------------------------------
         self.tokenizer = AutoTokenizer.from_pretrained(
             self.model_name,
-            trust_remote_code=True
+            trust_remote_code=False  # <--- CHANGE THIS TO FALSE
         )
 
         # ----------------------------------------------------
@@ -50,13 +53,10 @@ class LMProvider:
         # ----------------------------------------------------
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
-            trust_remote_code=True,
+            trust_remote_code=False, # <--- CHANGE THIS TO FALSE
             torch_dtype=torch_dtype
-            # REMOVED: device_map="auto" as we use .to(device)
-        ).to(device) # <--- ADDED: Explicitly moves model to the selected device
-
-        # NOTE: For pipeline to use the device, we pass it explicitly
-        self.device = device # Store device as an instance variable
+            # ...
+        ).to(device)
 
         # ----------------------------------------------------
         # Generation Pipeline
