@@ -1,5 +1,6 @@
 import re
 import uuid
+import json  # ADDED: Required for correct JSON serialization
 from typing import List
 from .schemas import LogicUnit, LogicPlan
 from .prompts import REASONING_TEMPLATE
@@ -157,7 +158,7 @@ class IntentParser:
         prompt = (
             REASONING_TEMPLATE.format(instruction=instruction)
             + "\n\nSeed (rough heuristic; refine strictly to schema):\n"
-            + str(seed_json)
+            + json.dumps(seed_json, indent=2)  # FIXED: Use json.dumps for proper JSON output
         )
 
         raw = self.lm.complete(prompt)
