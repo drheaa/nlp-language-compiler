@@ -1,45 +1,44 @@
 import json
 import re
 
-
-# REVISED safe_json_loads
+# ------------------------------------------------------
+# Safely parse JSON from LLM output (FINAL REVISION)
+# ------------------------------------------------------
 def safe_json_loads(s: str):
     """
     Attempts to extract a valid JSON object from an LLM response.
-    Aggressively strips leading noise and non-JSON artifacts.
+    Aggressively strips all leading and trailing non-JSON artifacts.
     """
 
-    # 1. Aggressive cleaning of common noise and markdown
+    # 1. Strip markdown fences and general whitespace
     s = s.strip()
     s = s.replace("```json", "").replace("```JSON", "").replace("```", "")
     
-    # 2. Aggressively strip everything BEFORE the first opening brace.
-    # This is the CRITICAL change to remove the "Explanation..." text.
+    # 2. CRITICAL FIX: Aggressively strip everything BEFORE the first opening brace.
+    # This is necessary to remove the "Explanation of the seed:" preamble.
     start = s.find('{')
     if start == -1:
         # If no opening brace is found, the model failed completely.
         raise ValueError(f"Failed to find starting JSON brace in model output:\n{s}")
 
     # Candidate starts at the first '{' and ends at the last '}'
+    # rfind('}') + 1 ensures we include the closing brace.
     candidate = s[start:s.rfind('}') + 1]
     
-    # 3. First attempt: Parse the bounded candidate
+    # 3. First attempt: Parse the clean candidate string
     try:
         return json.loads(candidate)
     except json.JSONDecodeError:
         pass  # Fall through to the final fallback
 
-    # 4. Final fallback: sanitize and retry the bounded candidate
-    # This handles issues like stray non-printable characters.
+    # 4. Final fallback: sanitize (remove non-printable chars) and retry
     cleaned = re.sub(r"[\x00-\x1F\u2022\u2023]+", "", candidate)
     
     try:
-        # Retry with the aggressive bounding on the cleaned string
         return json.loads(cleaned)
             
     except Exception as e:
-        # 5. Final failure
-        # Show the original output for debugging the prompt, but fail on the clean candidate.
+        # 5. Final failure - use the original output for context in the error
         raise ValueError(f"Failed to parse JSON from model output (Check LLM output):\n{s}") from e
 
 
