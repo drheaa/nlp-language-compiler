@@ -45,7 +45,7 @@ class LMProvider:
         # ----------------------------------------------------
         self.tokenizer = AutoTokenizer.from_pretrained(
             self.model_name,
-            trust_remote_code=False  # <--- CHANGE THIS TO FALSE
+            trust_remote_code=TRUE 
         )
 
         # ----------------------------------------------------
@@ -53,7 +53,7 @@ class LMProvider:
         # ----------------------------------------------------
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
-            trust_remote_code=False, # <--- CHANGE THIS TO FALSE
+            trust_remote_code=TRUE, 
             torch_dtype=torch_dtype
             # ...
         ).to(device)
