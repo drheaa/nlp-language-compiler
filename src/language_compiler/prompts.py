@@ -24,10 +24,11 @@ Instruction:
 {instruction}
 
 Return JSON in this exact pattern:
+<<<JSON_START>>>
 {{"steps":[
-  {{"id":"S1","role":"condition","text":"...", "depends_on":[],
-    "operator": null, "value": null, "negated": false,
-    "clarification_needed": false, "clarification_field": null}}
+  {{"id":"S1","role":"condition","text":"...", "depends_on":[],
+    "operator": null, "value": null, "negated": false,
+    "clarification_needed": false, "clarification_field": null}}
 ]}}
 """
 

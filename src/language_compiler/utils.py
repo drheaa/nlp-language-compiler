@@ -8,20 +8,19 @@ import re
 def safe_json_loads(s: str):
     """
     Attempts to extract a valid JSON object from an LLM response.
-
-    - Removes markdown fences (e.g., ```json)
-    - Uses regex to find and extract the JSON structure (first '{' to last '}')
-    - Tries to repair common errors before final parsing
-    - Raises clear error if parsing fails
+    Specifically targets and removes common small-model artifacts like preambles.
     """
 
-    # 1. Strip and normalize common artifacts
+    # 1. Aggressive cleaning of common noise and markdown
     s = s.strip()
     s = s.replace("```json", "").replace("```JSON", "").replace("```", "")
-    s = re.sub(r"^\s*?(\w+\s*?\:\s*?)", "", s, flags=re.MULTILINE).strip() # Removes leading "Response:" or "JSON:"
-
-    # 2. Aggressive Bounding (The key improvement)
-    # Search for the content between the first '{' and the last '}'
+    
+    # NEW: Explicitly remove the model's verbose preamble text
+    if "Explanation of the seed:" in s:
+        # Find the start of the explanation and discard it and everything before it
+        s = s.split("Explanation of the seed:", 1)[-1].strip()
+    
+    # 2. Aggressive Bounding (Search for the content between the first '{' and the last '}')
     match = re.search(r"(\{.*\})", s, re.DOTALL)
     
     candidate = s
@@ -31,20 +30,14 @@ def safe_json_loads(s: str):
     # 3. First attempt: Parse the bounded candidate
     try:
         return json.loads(candidate)
-    except json.JSONDecodeError as e:
-        # If it fails, try a simpler cleaning/parsing (fallback)
-        pass 
+    except json.JSONDecodeError:
+        pass  # Fall through to the final fallback
 
-    # 4. Fallback: sanitize and try again
-    # Replace non-printable characters and try direct loading
+    # 4. Final fallback: sanitize and try again
     cleaned = re.sub(r"[\x00-\x1F]+", "", s)
     
-    # Try the cleaned string
     try:
-        # Check if the cleaned string starts with a brace (most reliable signal)
-        if cleaned.startswith('{'):
-            return json.loads(cleaned)
-        # Otherwise, retry the aggressive bounding on the cleaned string
+        # Retry with the aggressive bounding on the cleaned string
         match_cleaned = re.search(r"(\{.*\})", cleaned, re.DOTALL)
         if match_cleaned:
             return json.loads(match_cleaned.group(1))
