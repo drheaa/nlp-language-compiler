@@ -58,3 +58,36 @@ def safe_json_loads(s: str):
 # Clean generated Python code
 # ------------------------------------------------------
 def clean_code(code: str) -> str:
+    """
+    Removes common artifacts from LLM-generated Python:
+    - markdown fences
+    - leading 'Here is...' text
+    - trailing explanations
+    - empty lines
+    """
+
+    # Remove markdown code fences
+    code = code.replace("```python", "").replace("```", "").strip()
+
+    # Remove narration like "Here is your code:"
+    code = re.sub(r"(?i)^here is.*?:", "", code).strip()
+
+    # Remove sentences that are not code (very conservative)
+    lines = code.split("\n")
+    clean_lines = []
+    for line in lines:
+        if re.match(r"^\s*(#|def|class|import|from|\w|\s|if|else|elif|for|while|return|try|except)", line):
+            clean_lines.append(line)
+        # ignore stray natural language lines
+
+    # Rejoin
+    cleaned = "\n".join(clean_lines).strip()
+
+    return cleaned
+
+
+# ------------------------------------------------------
+# Optional: normalize whitespace for parsing
+# ------------------------------------------------------
+def normalize_instruction(text: str) -> str:
+    return " ".join(text.strip().split())
