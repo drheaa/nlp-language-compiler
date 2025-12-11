@@ -29,12 +29,12 @@ class LMProvider:
         # Device Selection (Hybrid: GPU if available, else CPU)
         # ----------------------------------------------------
         if torch.cuda.is_available():
-            device = 0                           # use GPU 0
-            torch_dtype = torch.float16          # efficient on GPU
+            device = "cuda"
+            torch_dtype = torch.float16
             print("[LMProvider] CUDA detected → using GPU acceleration.")
         else:
             device = "cpu"
-            torch_dtype = torch.float32          # safe for CPU
+            torch_dtype = torch.float32
             print("[LMProvider] No GPU detected → using CPU.")
 
         # ----------------------------------------------------
@@ -52,7 +52,7 @@ class LMProvider:
             self.model_name,
             trust_remote_code=True,
             torch_dtype=torch_dtype,
-            device_map={"": device}
+            device_map="auto"
         )
 
         # ----------------------------------------------------
