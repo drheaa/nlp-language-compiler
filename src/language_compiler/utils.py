@@ -9,39 +9,48 @@ def safe_json_loads(s: str):
     """
     Attempts to extract a valid JSON object from an LLM response.
 
-    - Removes markdown fences
-    - Finds first '{' and last '}'
-    - Falls back to a simple eval-safe approach
+    - Removes markdown fences (e.g., ```json)
+    - Uses regex to find and extract the JSON structure (first '{' to last '}')
+    - Tries to repair common errors before final parsing
     - Raises clear error if parsing fails
-
-    This is MUCH more robust than the naive version.
     """
 
-    # Remove backticks or code fences
-    s = s.strip().replace("```", "")
+    # 1. Strip and normalize common artifacts
+    s = s.strip()
+    s = s.replace("```json", "").replace("```JSON", "").replace("```", "")
+    s = re.sub(r"^\s*?(\w+\s*?\:\s*?)", "", s, flags=re.MULTILINE).strip() # Removes leading "Response:" or "JSON:"
 
-    # Try basic bounding by braces
-    start = s.find("{")
-    end = s.rfind("}")
-
-    if start != -1 and end != -1 and end >= start:
-        candidate = s[start:end+1]
-        try:
-            return json.loads(candidate)
-        except json.JSONDecodeError:
-            pass  # fall through to next attempt
-
-    # Fallback: try to locate something that looks like JSON
+    # 2. Aggressive Bounding (The key improvement)
+    # Search for the content between the first '{' and the last '}'
+    match = re.search(r"(\{.*\})", s, re.DOTALL)
+    
+    candidate = s
+    if match:
+        candidate = match.group(1)
+    
+    # 3. First attempt: Parse the bounded candidate
     try:
-        return json.loads(s)
-    except Exception:
-        pass
+        return json.loads(candidate)
+    except json.JSONDecodeError as e:
+        # If it fails, try a simpler cleaning/parsing (fallback)
+        pass 
 
-    # Final fallback: attempt to sanitize commonly broken patterns
+    # 4. Fallback: sanitize and try again
+    # Replace non-printable characters and try direct loading
     cleaned = re.sub(r"[\x00-\x1F]+", "", s)
+    
+    # Try the cleaned string
     try:
-        return json.loads(cleaned)
+        # Check if the cleaned string starts with a brace (most reliable signal)
+        if cleaned.startswith('{'):
+            return json.loads(cleaned)
+        # Otherwise, retry the aggressive bounding on the cleaned string
+        match_cleaned = re.search(r"(\{.*\})", cleaned, re.DOTALL)
+        if match_cleaned:
+            return json.loads(match_cleaned.group(1))
+            
     except Exception as e:
+        # 5. Final failure
         raise ValueError(f"Failed to parse JSON from model output:\n{s}") from e
 
 
@@ -49,36 +58,3 @@ def safe_json_loads(s: str):
 # Clean generated Python code
 # ------------------------------------------------------
 def clean_code(code: str) -> str:
-    """
-    Removes common artifacts from LLM-generated Python:
-    - markdown fences
-    - leading 'Here is...' text
-    - trailing explanations
-    - empty lines
-    """
-
-    # Remove markdown code fences
-    code = code.replace("```python", "").replace("```", "").strip()
-
-    # Remove narration like "Here is your code:"
-    code = re.sub(r"(?i)^here is.*?:", "", code).strip()
-
-    # Remove sentences that are not code (very conservative)
-    lines = code.split("\n")
-    clean_lines = []
-    for line in lines:
-        if re.match(r"^\s*(#|def|class|import|from|\w|\s|if|else|elif|for|while|return|try|except)", line):
-            clean_lines.append(line)
-        # ignore stray natural language lines
-
-    # Rejoin
-    cleaned = "\n".join(clean_lines).strip()
-
-    return cleaned
-
-
-# ------------------------------------------------------
-# Optional: normalize whitespace for parsing
-# ------------------------------------------------------
-def normalize_instruction(text: str) -> str:
-    return " ".join(text.strip().split())

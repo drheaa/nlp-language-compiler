@@ -51,9 +51,12 @@ class LMProvider:
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             trust_remote_code=True,
-            torch_dtype=torch_dtype,
-            device_map="auto"
-        )
+            torch_dtype=torch_dtype
+            # REMOVED: device_map="auto" as we use .to(device)
+        ).to(device) # <--- ADDED: Explicitly moves model to the selected device
+
+        # NOTE: For pipeline to use the device, we pass it explicitly
+        self.device = device # Store device as an instance variable
 
         # ----------------------------------------------------
         # Generation Pipeline
@@ -62,9 +65,10 @@ class LMProvider:
             "text-generation",
             model=self.model,
             tokenizer=self.tokenizer,
-            do_sample=False,      # deterministic output
-            temperature=0.1,      # good for JSON/pseudocode stability
-            max_new_tokens=256    # safe default
+            device=self.device, # <--- ADDED: Ensure pipeline uses the right device
+            do_sample=False,
+            temperature=0.1,
+            max_new_tokens=256
         )
 
     def complete(self, prompt: str, **kwargs) -> str:
