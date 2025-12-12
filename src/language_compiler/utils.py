@@ -64,7 +64,10 @@ def clean_code(code: str) -> str:
     lines = code.split("\n")
     clean_lines = []
     for line in lines:
-        if re.match(r"^\s*(#|def|class|import|from|\w|\s|if|else|elif|for|while|return|try|except)", line):
+        if re.match(
+            r"^\s*(def|class|import|from|if|elif|else|for|while|return|try|except|\w+\s*=|\w+\()",
+            line
+        ):
             clean_lines.append(line)
         # ignore stray natural language lines
 

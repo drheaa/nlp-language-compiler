@@ -39,16 +39,18 @@ PSEUDOCODE_TEMPLATE = """
 Convert this JSON logic plan into clean pseudocode.
 
 Rules:
-1. Preserve step order based on depends_on relationships.
-2. Use IF / ELIF / ELSE / LOOP for logic.
-3. Convert negated conditions into NOT(...).
-4. For any step where clarification_needed = true,
-       insert TODO(clarification_field) in place of missing values.
-5. Use 4-space indentation.
-6. Output ONLY pseudocode, no markdown, no comments.
+1. Output ONLY pseudocode.
+2. Do NOT include explanations, notes, or meta-commentary.
+3. Do NOT mention clarification flags explicitly.
+4. Use IF / ELIF / ELSE / LOOP constructs.
+5. If clarification_needed = true, insert TODO(<field_name>) inline.
+6. Use 4-space indentation.
+7. No comments unless strictly required for syntax.
 
 Logic plan JSON:
 {logic_json}
+
+Return pseudocode only.
 """
 
 
@@ -63,7 +65,14 @@ Rules:
 2. Do not use external libraries.
 3. Preserve all control flow exactly.
 4. Return ONLY Python code — no explanations, no markdown.
+5. Do NOT include explanations or natural language.
+6. Do NOT describe what the code does.
+7. Create stub functions for actions if needed.
+8. Preserve control flow exactly.
+
 
 Pseudocode:
 {pseudocode}
+
+Return pseudocode only.
 """

@@ -48,6 +48,13 @@ class PseudocodeGenerator:
 
         # Gather missing clarification fields
         missing_fields = self._collect_missing_fields(plan)
+        
+        lines = []
+        for line in pseudo.split("\n"):
+            if not line.lower().startswith(("note:", "explanation:", "clarification")):
+                lines.append(line)
+
+        pseudo = "\n".join(lines).strip()
 
         return PseudocodeBlock(
             code=pseudo,
