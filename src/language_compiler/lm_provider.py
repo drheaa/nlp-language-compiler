@@ -21,7 +21,7 @@ class LMProvider:
         if model in MODEL_MAP:
             self.model_name = MODEL_MAP[model]
         else:
-            self.model_name = model         # full HF path
+            self.model_name = model       
 
         print(f"[LMProvider] Loading local model: {self.model_name}")
 
