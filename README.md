@@ -135,6 +135,7 @@ Vague instructions are detected and flagged rather than silently filled with inv
 
 ## Architecture
 
+```text
 Natural Language
         ↓
 IntentParser
@@ -149,6 +150,7 @@ Pseudocode
 CodeGenerator (optional)
         ↓
 Executable Python
+```
 
 Each stage is modular, testable, and independently inspectable.
 
@@ -222,4 +224,5 @@ It bridges NLP, program synthesis, and systems design in a way suitable for real
 - Naima Dzhunushova
 
 ---
+
 
