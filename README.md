@@ -2,7 +2,8 @@
 
 Natural Language → Logic → Pseudocode → Executable Code
 
-A modular NLP system that compiles messy human instructions into structured logic, readable pseudocode, and optional executable Python — while explicitly handling ambiguity and preserving reasoning transparency.
+A modular NLP system that compiles messy human instructions into structured logic, readable pseudocode, and optional executable Python, while explicitly handling ambiguity and preserving reasoning transparency.
+
 ---
 
 ## Project Overview
@@ -16,6 +17,7 @@ This makes the system:
 - interpretable
 - debuggable
 - safer
+
 --- 
 
 
@@ -103,6 +105,7 @@ def SET_AC_TEMPERATURE(value):
 
 if temperature > 30:
     SET_AC_TEMPERATURE(20)
+
 ---
 
 ## Key Features
@@ -148,6 +151,7 @@ CodeGenerator (optional)
 Executable Python
 
 Each stage is modular, testable, and independently inspectable.
+
 ---
 
 ## Installation
@@ -194,6 +198,7 @@ Some legacy tests assuming deterministic text outputs are marked as expected fai
 pytest
 ```
 All tests are verified in a clean Google Colab environment for reproducibility.
+
 ---
 
 ## Why This Project Matters
@@ -207,6 +212,7 @@ This project:
 - demonstrates how LLMs can be integrated into classical compiler pipelines
 
 It bridges NLP, program synthesis, and systems design in a way suitable for real-world automation, simulations, and rule-based systems.
+
 --- 
 
 ## Team Members
@@ -215,4 +221,5 @@ It bridges NLP, program synthesis, and systems design in a way suitable for real
 - Makhabat Zhyrgalbekova
 - Naima Dzhunushova
 
+---
 
