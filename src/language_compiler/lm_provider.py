@@ -21,7 +21,7 @@ class LMProvider:
         if model in MODEL_MAP:
             self.model_name = MODEL_MAP[model]
         else:
-            self.model_name = model  # full HF path
+            self.model_name = model  # full HF path
 
         print(f"[LMProvider] Loading local model: {self.model_name}")
 
@@ -37,15 +37,16 @@ class LMProvider:
             torch_dtype = torch.float32
             print("[LMProvider] No GPU detected → using CPU.")
 
-        # /content/nlp-language-compiler/src/language_compiler/lm_provider.py
+        # --- FIX #1: Assign device to the class instance (Fixes AttributeError) ---
+        self.device = device 
+        # --------------------------------------------------------------------------
 
-# ...
         # ----------------------------------------------------
         # Load tokenizer
         # ----------------------------------------------------
         self.tokenizer = AutoTokenizer.from_pretrained(
             self.model_name,
-            trust_remote_code=True
+            trust_remote_code=False # <-- FIX #2: Prevents loading of outdated code
         )
 
         # ----------------------------------------------------
@@ -53,7 +54,7 @@ class LMProvider:
         # ----------------------------------------------------
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
-            trust_remote_code=True, 
+            trust_remote_code=False, # <-- FIX #2: Prevents loading of outdated code
             torch_dtype=torch_dtype
             # ...
         ).to(device)
@@ -65,7 +66,7 @@ class LMProvider:
             "text-generation",
             model=self.model,
             tokenizer=self.tokenizer,
-            device=self.device, # <--- ADDED: Ensure pipeline uses the right device
+            device=self.device, # This line now works
             do_sample=False,
             temperature=0.1,
             max_new_tokens=256
