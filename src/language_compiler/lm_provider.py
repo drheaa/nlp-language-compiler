@@ -21,7 +21,7 @@ class LMProvider:
         if model in MODEL_MAP:
             self.model_name = MODEL_MAP[model]
         else:
-            self.model_name = model  # full HF path
+            self.model_name = model         # full HF path
 
         print(f"[LMProvider] Loading local model: {self.model_name}")
 
@@ -39,6 +39,7 @@ class LMProvider:
 
         # --- FIX #1: Assign device to the class instance (Fixes AttributeError) ---
         self.device = device 
+        
         # --------------------------------------------------------------------------
 
         # ----------------------------------------------------
