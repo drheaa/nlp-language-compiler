@@ -126,7 +126,7 @@ Vague instructions are detected and flagged rather than silently filled with inv
 - robust post-processing
 
 5) Fully Local & Free
-- runs on lightweight CPU-friendly models (Qwen2.5-0.5B, Phi-3.5-mini)
+- runs on lightweight models (Qwen2.5-0.5B, Phi-3.5-mini)
 - no paid APIs
 - no GPU required
 - reproducible in Google Colab
@@ -224,5 +224,6 @@ It bridges NLP, program synthesis, and systems design in a way suitable for real
 - Naima Dzhunushova
 
 ---
+
 
 
