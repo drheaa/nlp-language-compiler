@@ -1,27 +1,25 @@
 import json
-from instruction_templates import (
-    simple_condition, negation, multi_condition, temporal, ambiguous
+from data.generation.instruction_templates import (
+    simple, negation, multi_condition, temporal, ambiguous
 )
 
 dataset = []
 
-for _ in range(30):
-    dataset.append({"type": "simple", "instruction": simple_condition()})
+def add(n, fn, label):
+    for _ in range(n):
+        dataset.append({
+            "type": label,
+            "instruction": fn()
+        })
 
-for _ in range(30):
-    dataset.append({"type": "threshold", "instruction": simple_condition()})
+add(30, simple, "simple")
+add(30, simple, "threshold")
+add(22, negation, "negation")
+add(22, multi_condition, "multi_condition")
+add(22, temporal, "temporal")
+add(22, ambiguous, "ambiguous")
 
-for _ in range(22):
-    dataset.append({"type": "negation", "instruction": negation()})
-
-for _ in range(22):
-    dataset.append({"type": "multi_condition", "instruction": multi_condition()})
-
-for _ in range(22):
-    dataset.append({"type": "temporal", "instruction": temporal()})
-
-for _ in range(22):
-    dataset.append({"type": "ambiguous", "instruction": ambiguous()})
-
-with open("house_instructions.json", "w") as f:
+with open("data/instructions/house_instructions.json", "w") as f:
     json.dump(dataset, f, indent=2)
+
+print("Generated", len(dataset), "instructions")
