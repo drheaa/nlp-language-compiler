@@ -1,5 +1,5 @@
 from typing import List, Optional, Literal
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 Role = Literal["condition", "action", "note"]
 
@@ -7,11 +7,11 @@ class LogicUnit(BaseModel):
     id: str
     role: Role
     text: str
-    depends_on: List[str] = []
 
-    # NEW optional fields for upgraded reasoning
-    operator: Optional[str] = None          # AND, OR, >, <, ==, >=, <=
-    value: Optional[str] = None             # "25", "5 minutes", etc.
+    depends_on: List[str] = Field(default_factory=list)
+
+    operator: Optional[str] = None
+    value: Optional[str] = None
     negated: Optional[bool] = False
 
     clarification_needed: Optional[bool] = False

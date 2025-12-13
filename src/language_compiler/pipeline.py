@@ -3,6 +3,7 @@ from .intent_parser import IntentParser
 from .pseudocode import PseudocodeGenerator
 from .codegen import CodeGenerator
 from .lm_provider import LMProvider
+from .semantic_preprocessor import SemanticPreprocessor 
 
 
 class LanguageCompiler:
@@ -22,43 +23,20 @@ class LanguageCompiler:
         self.parser = IntentParser(self.lm)
         self.pseudo = PseudocodeGenerator(self.lm)
         self.codegen = CodeGenerator(self.lm)
+        self.semantic = SemanticPreprocessor()
 
-    def compile(
-        self,
-        instruction: str,
-        to_code: bool = False,
-        interactive: bool = False
-    ) -> CompilerOutput:
+    def compile(self, instruction: str, to_code: bool = False, interactive: bool = False) -> CompilerOutput:
+        sem = self.semantic.normalize(instruction)
+        instruction_norm = sem.normalized_instruction
 
-        # -------------------------
-        # Step 1 — Extract logic
-        # -------------------------
-        plan = self.parser.parse(instruction)
-
-        # -------------------------
-        # Step 2 — Generate pseudocode
-        # TODO markers inserted for missing clarifications
-        # -------------------------
+        plan = self.parser.parse(instruction_norm)
         pseudo = self.pseudo.generate(plan, interactive=interactive)
 
-        # Gather missing clarifications if interactive mode is enabled
-        clarifications = (
-            pseudo.missing_clarifications if interactive else None
-        )
+        clarifications = (pseudo.missing_clarifications if interactive else None)
 
-        # -------------------------
-        # Step 3 — Generate Python code (optional)
-        # -------------------------
-        code = None
-        if to_code:
-            code = self.codegen.generate_python(pseudo)
-
-        # -------------------------
-        # Final structured output
-        # -------------------------
         return CompilerOutput(
             reasoning=plan,
             pseudocode=pseudo,
-            code=code,
+            code=None if not to_code else self.codegen.generate_python(pseudo),
             clarifications_needed=clarifications
         )
