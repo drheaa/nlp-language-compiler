@@ -74,13 +74,6 @@ MANIFEST
 # -------------------------
 .ipynb_checkpoints/
 
-# -------------------------
-# Project-specific
-# -------------------------
-# prevent accidental commit of datasets or user-generated examples
-data/
-data/*
-
 # prevent environment variables from leaking
 .env
 .env.*
