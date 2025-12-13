@@ -20,3 +20,9 @@ add(22, temporal, "temporal")
 add(22, ambiguous, "ambiguous")
 
 
+print("Generated", len(dataset), "instructions")
+with open("data/generated_dataset.jsonl", "w") as f:
+    for item in dataset:
+        f.write(json.dumps(item) + "\n")
+        
+print("Saved to data/generated_dataset.jsonl")
