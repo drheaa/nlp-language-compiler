@@ -17,7 +17,7 @@ Rules:
 8. No markdown, no explanations, no extra text.
 
 If clarification is required, return EXACTLY:
-{"error":"clarification_required","fields":["<field_name>"]}
+{{"error":"clarification_required","fields":["<field_name>"]}}
 
 Otherwise, return EXACTLY:
 {
